@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.study.mapper.Student3Mapper">
+    <resultMap id="resultMap" type="org.study.entity.Student3">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="description" property="description"/>
+        <result column="course_id" property="courseId"/>
+    </resultMap>
+    <!-- 动态sql
+    <sql>
+    <if>
+    <chose>
+    <where>
+    <set>
+    <foreach>
+    -->
+
+
+    <!-- sql，提取重复的sql片段 -->
+    <sql id="column_sql">
+        id,username,password,description,course_id
+    </sql>
+    <select id="selectOne" parameterType="int" resultMap="resultMap">
+        SELECT
+        <include refid="column_sql"/>
+        FROM Student
+        WHERE ID = #{id}
+    </select>
+
+    <!-- if 元素 动态化 查询 -->
+    <select id="selectTwo" resultMap="resultMap">
+        select
+        *
+        from student
+        where username is not  NULL
+        <if test ="username != null and username !='' ">
+            and username = #{username}
+        </if>
+        <if test ="password != null and password != '' ">
+            and password = #{password}
+        </if>
+    </select>
+
+    <!-- chose 元素 选择多个中的一个 -->
+    <select id="selectThree" resultMap="resultMap">
+        select
+        *
+        FROM student
+        where
+        username is not  null
+        <choose>
+            <when test="username != null and username != ''">
+                and username = #{username}
+            </when>
+            <when test="password != null and password != ''">
+                and password = #{password}
+            </when>
+            <otherwise>
+                and course_id is not  null
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- where 元素 一个条件去掉and -->
+    <select id="selectFour" resultMap="resultMap">
+        SELECT
+        *
+        FROM student
+        <where>
+            <if test="username != null and username != ''">
+                username = #{username}
+            </if>
+            <if test="password != null and password != ''">
+                and password = #{password}
+            </if>
+        </where>
+        <!-- 定制元素的行为 -->
+        <!--<trim prefix="WHERE" prefixOverrides="AND |OR ">-->
+        <!--</trim>-->
+    </select>
+    <select id="updateOne" resultMap="resultMap">
+        UPDATE student
+        <set>
+            <if test="username != null and username != ''">
+                username = #{username},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password}
+            </if>
+        </set>
+        WHERE
+          id =#{id}
+    </select>
+    <select id="selectFive" resultMap="resultMap">
+        SELECT
+        *
+        FROM student
+        where course_id IN
+        <foreach item="item" index="index" collection="list" open ="(" separator="," close=")">
+            #{item}
+        </foreach>
+
+    </select>
+
+
+</mapper>

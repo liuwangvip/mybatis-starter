@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.study.mapper.CourseMapper">
+    <resultMap id="resultMap" type="org.study.entity.Course">
+        <id column="id" property="id" />
+        <result column="course_id" property="courseId" />
+        <result column="course_name" property="courseName"/>
+        <result column="description" property="description"/>
+    </resultMap>
+
+
+    <select id="find" parameterType="int" resultMap="resultMap">
+        SELECT * FROM course WHERE course_id = #{id}
+    </select>
+    <select id="findAll" parameterType="int" resultMap="resultMap">
+        SELECT * FROM course WHERE course_id = #{id}
+    </select>
+
+
+</mapper>

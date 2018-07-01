@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.study.mapper.Student2Mapper">
+
+    <!-- 关联的嵌套查询 所引发的N+1 问题 -->
+    <resultMap id="resultMap" type="org.study.entity.Student2">
+        <id column="id" property="id" javaType="int"/>
+        <result column="username" property="username"/>
+        <result column="description" property="description"/>
+        <result column="course_id" property="courseId"/>
+        <association property="course" column="course_id" javaType="Course"
+                     select="org.study.mapper.CourseMapper.find"/>
+    </resultMap>
+
+
+    <select id="selectA" resultMap="resultMap">
+        select
+           *
+        from student
+        where id = #{id}
+    </select>
+
+    <!-- 关联嵌套结果 只运行一条查询sql-->
+    <resultMap id="resultMap1" type="org.study.entity.Student2">
+        <id column="id" property="id" javaType="int"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="description" property="description"/>
+        <result column="course_id" property="courseId"/>
+        <association property="course" column="course_id" javaType="Course"
+                     resultMap="org.study.mapper.CourseMapper.resultMap" >
+        </association>
+    </resultMap>
+
+    <select id="selectB" resultMap="resultMap1">
+        select
+        *
+        from student st left join course co on st.course_id = co.course_id
+        where st.id = #{id}
+    </select>
+
+    <!-- 集合嵌套查询 N+1 问题-->
+    <resultMap id="resultMap2" type="org.study.entity.Student2">
+        <id column="id" property="id" javaType="int"/>
+        <result column="username" property="username"/>
+        <result column="description" property="description"/>
+        <result column="course_id" property="courseId"/>
+        <collection property="courses" column="course_id" select="org.study.mapper.CourseMapper.findAll"/>
+    </resultMap>
+
+
+    <select id="selectC" resultMap="resultMap2">
+        select
+        *
+        from student
+        where id = #{id}
+    </select>
+
+    <!-- 集合嵌套结果 1条sql -->
+    <resultMap id="resultMap3" type="org.study.entity.Student2">
+        <id column="id" property="id" javaType="int"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="description" property="description"/>
+        <result column="course_id" property="courseId"/>
+        <collection property="courses" column="course_id" ofType="Course" resultMap="org.study.mapper.CourseMapper.resultMap" columnPrefix="co_"/>
+    </resultMap>
+
+    <select id="selectD" resultMap="resultMap3">
+        select
+        st.id,
+        st.username ,
+        st.password,
+        st.description,
+        st.course_id as course_id,
+        co.id as co_id,
+        co.course_name as co_course_name,
+        co.description as co_description
+        from student st left join course co on st.course_id = co.course_id
+        where st.id = #{id}
+    </select>
+    <!-- mybatis 默认是不开启二级缓存，通过这一句可以开启二级缓存 -->
+    <!-- 默认是LRU -->
+    <!-- 设置多长时间刷新缓存 -->
+    <!-- 最多缓存多少个引用对象 -->
+    <!-- 默认是可读写的:线程不共享;可读的:线程共享 -->
+    <cache eviction="FIFO"    flushInterval="60000"
+            size="512"
+            readOnly="true"  />
+
+
+</mapper>
